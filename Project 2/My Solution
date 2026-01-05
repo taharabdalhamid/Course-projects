@@ -1,0 +1,411 @@
+#include <iostream> 
+#include <cstdlib> 
+
+using namespace std;
+
+// --- Enums Definitions ---
+
+enum enDifficultyLevel { 
+    Easy = 1, 
+    Medium = 2, 
+    Hard = 3, 
+    Mix = 4 
+};
+
+enum enOperationType { 
+    Add = 1, 
+    Sub = 2, 
+    Mul = 3, 
+    Div = 4, 
+    Mixed = 5 
+};
+
+enum enColors { 
+    Green = 1, 
+    Red = 2, 
+    Yellow = 3, 
+    Black = 4 
+};
+
+enum enSounds { 
+    Nothing = 1, 
+    Ring = 2 
+};
+
+enum enResult { 
+    Passed = 1, 
+    Failed = 2 
+};
+
+// --- Structs Definitions ---
+
+struct strResult {
+    unsigned short NumberOfQuestions = 0;
+    enDifficultyLevel QuestionsLevel;
+    enOperationType OperationsType;
+    unsigned short NumberOfRightAnswer = 0;
+    unsigned short NumberOfWrongAnswer = 0;
+    enResult Result;
+    string ResultOfTheTest;
+};
+
+struct strOperation {
+    float Number1OfOperation = 0;
+    float Number2OfOperation = 0;
+    enOperationType OperationType;
+};
+
+struct strQuiz {
+    float AnswerOfOperation = 0;
+    float RightAnswer = 0;
+};
+
+// --- Helper Functions ---
+
+int RandomNumber(int From, int To) {
+    int randNum = rand() % (To - From + 1) + From;
+    return randNum;
+}
+
+int RandomNumberBasedOnDifficulty(enDifficultyLevel Level) {
+    switch (Level) {
+        case enDifficultyLevel::Easy: { 
+            return RandomNumber(0, 10); 
+        }
+        case enDifficultyLevel::Medium: { 
+            return RandomNumber(11, 50); 
+        }
+        case enDifficultyLevel::Hard: { 
+            return RandomNumber(51, 100); 
+        }
+        default: 
+            return RandomNumber(0, 100);
+    }
+}
+
+unsigned short ReadPositiveNumberbitwenFromTo(string Message , unsigned short From , unsigned short To) {
+    int Number = 0;
+    do { 
+        cout << Message ; 
+        cin >> Number; 
+    } while ((Number < From) || (Number > To));
+    
+    return Number;
+}
+
+enOperationType CheckOperationType(enOperationType OperationType) {
+    switch (OperationType) {
+        case enOperationType::Add: { 
+            return enOperationType::Add; 
+        }
+        case enOperationType::Sub: { 
+            return enOperationType::Sub; 
+        }
+        case enOperationType::Mul: { 
+            return enOperationType::Mul; 
+        }
+        case enOperationType::Div: { 
+            return enOperationType::Div; 
+        }
+        default: { 
+            return enOperationType(RandomNumber(1, 4)); 
+        }
+    }
+}
+
+char GetOperationType(enOperationType Type) {
+    char OperationType[4]{ '+','-','x','/' };
+    return OperationType[Type - 1];
+}
+
+void PrintOperation(float Number1, float Number2, enOperationType OperationType) {
+    cout << Number1 << endl;
+    cout << Number2 << " " << GetOperationType(OperationType) << endl;
+    cout << "___________\n";
+}
+
+void PrintheadQuestion(unsigned short Question,unsigned short NumberOfQuestion) {
+    cout << "\n\nQuestion [" << Question << "/" << NumberOfQuestion << "]\n\n";
+}
+
+float ReadNumber() {
+    float Number = 0;
+    cin >> Number;
+    return Number;
+}
+
+float CalculateResult(float Number1, float Number2, enOperationType OperationType) {
+    switch (OperationType) {
+        case enOperationType::Add: { 
+            return Number1 + Number2; 
+        }
+        case enOperationType::Sub: { 
+            return Number1 - Number2; 
+        }
+        case enOperationType::Mul: { 
+            return Number1 * Number2; 
+        }
+        default: { 
+            return Number1 / Number2; 
+        }
+    }
+}
+
+void PointsCalculation(strQuiz Quiz, unsigned short& CountRightAnswer, unsigned short& CountWrongAnswer) {
+    if (Quiz.AnswerOfOperation == Quiz.RightAnswer) 
+        CountRightAnswer++;
+    else 
+        CountWrongAnswer++;
+}
+
+bool VerificationOfDivision(float Dividend, float Divisor) {
+    return(Divisor == 0);
+}
+
+strOperation FillOperation(enDifficultyLevel Level, enOperationType OperationType) {
+    strOperation Operation;
+    Operation.Number1OfOperation = float(RandomNumberBasedOnDifficulty(Level));
+    Operation.OperationType = CheckOperationType(OperationType);
+    do {
+        Operation.Number2OfOperation = float(RandomNumberBasedOnDifficulty(Level));
+    } while ((Operation.OperationType == enOperationType::Div) && (VerificationOfDivision(Operation.Number1OfOperation, Operation.Number2OfOperation)));
+    
+    return  Operation;
+}
+
+strQuiz FillQuiz( strOperation Operation, enOperationType OperationType) {
+    strQuiz Quiz;
+    Quiz.AnswerOfOperation = ReadNumber();
+    Quiz.RightAnswer = CalculateResult(Operation.Number1OfOperation, Operation.Number2OfOperation, Operation.OperationType);
+    
+    return  Quiz;
+}
+
+bool CompareTwoNumbers(float Number1, float Number2) {
+    return (Number1 == Number2);
+}
+
+void PrintQuizResult(strQuiz Quiz) {
+    if (CompareTwoNumbers(Quiz.AnswerOfOperation, Quiz.RightAnswer)) {
+        cout << "Right Answer :-)\n";
+    } else {
+        cout << "Wrong Answer:-(\n";
+        cout << "The Right Answer is: " << Quiz.RightAnswer << endl;
+    }
+}
+
+// --- Visual/Audio Effects Functions ---
+
+enColors GetColor(bool Check) {
+    switch (Check) {
+        case true: { 
+            return enColors::Green; 
+        }
+        default: { 
+            return enColors::Red; 
+        }
+    }
+}
+
+void ColorScreen(enColors Color) {
+    switch (Color) {
+        case enColors::Green: { 
+            system("color 2F"); // Green color 
+            break; 
+        }
+        case enColors::Red: { 
+            system("color 4F");  // Red color 
+            break; 
+        }
+        case enColors::Yellow: { 
+            system("color 60");  // Yellow color 
+            break; 
+        }
+        case enColors::Black: { 
+            system("color 0F");    // Black color 
+            break; 
+        }
+    }
+}
+
+enSounds GetSound(bool result) {
+    switch (result) {
+        case false: { 
+            return enSounds::Ring; 
+            break; 
+        }
+        default: 
+            return enSounds::Nothing;
+    }
+}
+
+void PlaySound(enSounds Sound) {
+    switch (Sound) {
+        case enSounds::Ring: { 
+            cout << "\a"; 
+            break; 
+        }
+    }
+}
+
+void EffectColorScreen(bool result) {
+    ColorScreen(GetColor(result));
+}
+
+void EffectSound(bool result) {
+    PlaySound(GetSound(result));
+}
+
+void ApplyEffects(bool Result) {
+    EffectColorScreen(Result);
+    EffectSound(Result);
+}
+
+void CleanScreen() {
+    system("cls");
+}
+
+void ResetColor() {
+    ColorScreen(enColors::Black);
+}
+
+void ResetScreen() {
+    CleanScreen();
+    ResetColor();
+}
+
+// --- Result Processing Functions ---
+
+enResult CheckResult(unsigned short NumberOfRightAnswer, unsigned short NumberOfWrongAnswer) {
+    if (NumberOfRightAnswer >= NumberOfWrongAnswer) {
+        return enResult::Passed;
+    } else {
+        return enResult::Failed;
+    }
+}
+
+string GetResultString(enResult Result) {
+    string Results[2] = { "Passed","Failed" };
+    return Results[Result - 1];
+}
+
+strResult FillResult(enDifficultyLevel QuestionsLevel, enOperationType OperationType, unsigned short NumberOfQuestions, unsigned short CountRightAnswer, unsigned short CountWrongAnswer) {
+    strResult Result;
+    Result.NumberOfRightAnswer = CountRightAnswer;
+    Result.NumberOfWrongAnswer = CountWrongAnswer;
+    Result.NumberOfQuestions = NumberOfQuestions;
+    Result.OperationsType = OperationType;
+    Result.QuestionsLevel = QuestionsLevel;
+    Result.Result = CheckResult(CountRightAnswer, CountWrongAnswer);
+    Result.ResultOfTheTest = GetResultString(Result.Result);
+    
+    return Result;
+}
+
+// --- Game Logic ---
+
+strResult PlayGame() {
+    strResult Result;
+    strOperation Operation;
+    strQuiz Quiz;
+    
+    unsigned short NumberOfQuestion = ReadPositiveNumberbitwenFromTo("How Many Questions do you want to answer ?" , 1 , 256);
+    enDifficultyLevel QuestionsLevel = enDifficultyLevel(ReadPositiveNumberbitwenFromTo("Enter Questions Level[1] Easy, [2] Medium, [3] Hard, [4] Mix ? ",1,5) );
+    enOperationType OperationType = enOperationType(ReadPositiveNumberbitwenFromTo("Enter Operation Type [1] Add, [2] Sub, [3] Mul, [4] Div, [5] Mix ? ", 1, 5));
+    
+    unsigned short CountRightAnswer = 0, CountWrongAnswer = 0;
+    
+    for (unsigned short Question = 1; Question <= NumberOfQuestion; Question++) {
+        Operation = FillOperation(QuestionsLevel, OperationType);
+        
+        PrintheadQuestion(Question, NumberOfQuestion);
+        PrintOperation(Operation.Number1OfOperation, Operation.Number2OfOperation, Operation.OperationType);
+        
+        Quiz = FillQuiz(Operation,  OperationType);
+        
+        PointsCalculation(Quiz, CountRightAnswer, CountWrongAnswer);
+        PrintQuizResult(Quiz);
+        ApplyEffects(CompareTwoNumbers(Quiz.AnswerOfOperation, Quiz.RightAnswer));
+    }
+    
+    return Result = FillResult( QuestionsLevel, OperationType, NumberOfQuestion, CountRightAnswer, CountWrongAnswer);
+}
+
+// --- Result Display Functions ---
+
+string GetLevel(enDifficultyLevel Level) {
+    switch (Level) {
+        case enDifficultyLevel::Easy: { 
+            return "Easy"; 
+        }
+        case enDifficultyLevel::Medium: { 
+            return "Medium"; 
+        }
+        case enDifficultyLevel::Hard: { 
+            return "Hard"; 
+        }
+        default: 
+            return "Mix";
+    }
+}
+
+string GetType(enOperationType Type) {
+    switch (Type) {
+        case enOperationType::Add: { 
+            return "Add"; 
+        }
+        case enOperationType::Sub: { 
+            return "Sub"; 
+        }
+        case enOperationType::Mul: { 
+            return "Mul"; 
+        }
+        case enOperationType::Div: { 
+            return "Div"; 
+        }
+        default: 
+            return "Mix";
+    }
+}
+
+void PrintHeadOfResult(string Result) {
+    if (Result == "Passed") {
+        cout << "\n_________________________\n\n";
+        cout << "Final Result is: " << Result << ":-)\n";
+        cout << "_________________________\n\n";
+    } else {
+        cout << "\n_________________________\n\n";
+        cout << "Final Result is: " << Result << ":-(\n";
+        cout << "_________________________\n\n";
+    }
+}
+
+void PrintResult(strResult Result) {
+    PrintHeadOfResult(Result.ResultOfTheTest);
+    cout << "Number of Questions: " << Result.NumberOfQuestions << endl;
+    cout << "Questions Level: " << GetLevel(Result.QuestionsLevel) << endl;
+    cout << "Operation Type: " << GetType(Result.OperationsType) << endl;
+    cout << "Number of Right Answers :" << Result.NumberOfRightAnswer << endl;
+    cout << "Number of Wrong Answers :" << Result.NumberOfWrongAnswer << endl;
+    cout << "_________________________\n" << endl;
+}
+
+void StartGame() {
+    strResult Result;
+    char PlayAgain = 'Y';
+    do {
+        ResetScreen();
+        Result = PlayGame();
+        PrintResult(Result);
+        cout << "Do you want to play again? Y|N ? ";
+        cin >> PlayAgain;
+    } while (PlayAgain == 'Y' || PlayAgain == 'y');
+};
+
+// --- Main Function ---
+
+int main() {
+    srand((unsigned)time(NULL));
+    StartGame();
+    return 0;
+}
